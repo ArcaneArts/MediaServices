@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'com.jfrog.artifactory' version '4.29.0'
+}
+
+group 'art.arcane'
+version System.getenv("JFROG_VERSION") ?: '1.0.0'
+
+repositories {
+    mavenLocal()
+    maven { url "https://arcanearts.jfrog.io/artifactory/archives" }
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    implementation 'org.sejda.imageio:webp-imageio:0.1.6'
+    implementation 'net.bramp.ffmpeg:ffmpeg:0.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+artifactory {
+    publish {
+        contextUrl = 'https://arcanearts.jfrog.io/artifactory'
+        repository {
+            repoKey = 'arcane'
+            username = System.getenv("JFROG_USERNAME")
+            password = System.getenv("JFROG_PASSWORD")
+        }
+        defaults {
+            publications ('mavenJava')
+            publishConfigs('archives', 'published')
+            publishBuildInfo = true
+            publishArtifacts = true
+            publishPom = true
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = "https://arcanearts.jfrog.io/artifactory/arcane"
+        }
+    }
+}
